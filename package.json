@@ -1,0 +1,38 @@
+{
+  "name": "devaluex",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "setup": "pnpm build",
+    "build": "vite build",
+    "dev": "pnpm build --watch",
+    "test": "vitest run",
+    "test:browser": "vitest --workspace=vitest.workspace.ts"
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "@liuli-util/vite-plugin-node": "^0.10.0",
+    "@vitest/browser": "^3.1.4",
+    "playwright": "^1.52.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "packageManager": "pnpm@10.5.2+sha512.da9dc28cd3ff40d0592188235ab25d3202add8a207afbedc682220e4a0029ffbff4562102b9e6e46b4e3f9e8bd53e6d05de48544b0c57d4b0179e22c76d1199b",
+  "dependencies": {
+    "devalue": "^5.1.1",
+    "serialize-error": "^12.0.0"
+  }
+}
