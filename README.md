@@ -1,6 +1,6 @@
 # devaluex
 
-A plugin system for `devalue` to serialize and deserialize complex objects with support for async plugins.
+A plugin system for [devalue](https://github.com/rich-harris/devalue) to serialize and deserialize complex objects with support for async plugins.
 
 ## Usage
 
