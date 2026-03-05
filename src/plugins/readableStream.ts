@@ -1,5 +1,10 @@
 import { Plugin } from './plugin'
 
+// NOTE: WebKit/Safari does not support async iteration (Symbol.asyncIterator) on ReadableStream.
+// Using `Array.fromAsync(stream)` or `for await...of` silently returns empty results.
+// Use `getReader()` to consume streams for cross-browser compatibility.
+// Tracked: https://github.com/WebKit/standards-positions/issues/319
+// Can I Use: https://caniuse.com/mdn-api_readablestream_--asynciterator
 export const ReadableStreamPlugin: Plugin<ReadableStream, Uint8Array> = {
   name: 'ReadableStream',
   test(data) {

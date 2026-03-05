@@ -7,3 +7,9 @@ testPlugin(new Headers([['Content-Type', 'application/json']]), HeadersPlugin, {
     return [...a.entries()].join(',') === [...b.entries()].join(',')
   },
 })
+testPlugin(new Headers(), HeadersPlugin, {
+  name: 'headers',
+  equal: (a, b) => {
+    return [...a.entries()].join(',') === [...b.entries()].join(',')
+  },
+})

@@ -3,6 +3,8 @@ import { RequestPlugin } from './request'
 import { HeadersPlugin } from './headers'
 import { createFormData, testPlugin } from '../test/testPlugin'
 import { FormDataPlugin } from './formdata'
+import { server } from '@vitest/browser/context'
+import { ReadableStreamPlugin } from './readableStream'
 
 function strToArrayBuffer(str: string): ArrayBuffer {
   return new TextEncoder().encode(str).buffer as ArrayBuffer
@@ -108,29 +110,32 @@ testPlugin(
     },
   },
 )
-testPlugin(
-  new Request('https://example.com', {
-    method: 'POST',
-    body: new ReadableStream({
-      start(controller) {
-        const a = 'Hello, world!'.split('')
-        for (const char of a) {
-          controller.enqueue(char)
-        }
-        controller.close()
+if (server.browser !== 'firefox' && server.browser !== 'webkit') {
+  testPlugin(
+    new Request('https://example.com', {
+      method: 'POST',
+      body: new ReadableStream({
+        start(controller) {
+          const a = 'Hello, world!'.split('')
+          for (const char of a) {
+            controller.enqueue(char)
+          }
+          controller.close()
+        },
+      }).pipeThrough(new TextEncoderStream()),
+      // @ts-expect-error
+      duplex: 'half',
+    }),
+    [RequestPlugin, HeadersPlugin],
+    {
+      name: 'stream body',
+      equal: async (a) => {
+        const r = await Array.fromAsync(
+          a.body!.pipeThrough(new TextDecoderStream()),
+        )
+        expect(r).toEqual(['Hello, world!'])
+        return
       },
-    }).pipeThrough(new TextEncoderStream()),
-    // @ts-expect-error
-    duplex: 'half',
-  }),
-  [RequestPlugin, HeadersPlugin],
-  {
-    name: 'stream body',
-    equal: async (a) => {
-      const r = await Array.fromAsync(
-        a.body!.pipeThrough(new TextDecoderStream()),
-      )
-      expect(r).toEqual(['Hello, world!'])
     },
-  },
-)
+  )
+}

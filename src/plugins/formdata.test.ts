@@ -3,6 +3,7 @@ import { createFormData, testPlugin } from '../test/testPlugin'
 import { FormDataPlugin } from './formdata'
 import { ReadableStreamPlugin } from './readableStream'
 import { stringify } from '../devaluex'
+import { server } from '@vitest/browser/context'
 
 const fd = createFormData([
   [
@@ -46,24 +47,29 @@ testPlugin(fd, FormDataPlugin, {
     return true
   },
 })
-testPlugin(
-  new ReadableStream({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode('hello'))
+// WebKit does not support ReadableStream async iteration (Symbol.asyncIterator),
+// so Array.fromAsync(stream) silently returns []. Skip on WebKit.
+// https://github.com/WebKit/standards-positions/issues/319
+if (server.browser !== 'webkit') {
+  testPlugin(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('hello'))
+      },
+      pull(controller) {
+        controller.enqueue(new TextEncoder().encode('world'))
+        controller.close()
+      },
+    }),
+    ReadableStreamPlugin,
+    {
+      name: 'readable stream',
+      equal: async (a, b) => {
+        expect(
+          await Array.fromAsync(a.pipeThrough(new TextDecoderStream())),
+        ).toEqual(['hello', 'world'])
+        return true
+      },
     },
-    pull(controller) {
-      controller.enqueue(new TextEncoder().encode('world'))
-      controller.close()
-    },
-  }),
-  ReadableStreamPlugin,
-  {
-    name: 'readable stream',
-    equal: async (a, b) => {
-      expect(
-        await Array.fromAsync(a.pipeThrough(new TextDecoderStream())),
-      ).toEqual(['hello', 'world'])
-      return true
-    },
-  },
-)
+  )
+}
