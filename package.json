@@ -20,6 +20,10 @@
     "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rxliuli/devaluex"
+  },
   "sideEffects": false,
   "devDependencies": {
     "@liuli-util/vite-plugin-node": "^0.10.0",
