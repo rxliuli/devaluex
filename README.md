@@ -84,6 +84,7 @@ console.log(b) // { a: 1, b: Blob { size: 3, type: '' } }
 | `CustomEvent`                  | ✅ [^1]   |
 | `DOMException`                 | ✅ [^1]   |
 | `ImageData`                    | ✅ [^1]   |
+| `CryptoKey`                    | ✅ [^1]   |
 | `AbortSignal`                  | ❌        |
 
 [^1]: Need plugin support.
