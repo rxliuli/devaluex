@@ -38,28 +38,33 @@ export async function stringifyAsync(
   },
 ) {
   const plugins = options?.plugins ?? []
+  const asyncValues = new Map<any, any>()
   const promises: Promise<void>[] = []
-  let result = devalue.stringify(
-    data,
+
+  const ctx = {
+    stringify: (data: any) => stringify(data, options),
+    stringifyAsync: (data: any) => stringifyAsync(data, options),
+    parse: (data: any) => parse(data, options),
+  }
+
+  const buildReducers = (collectAsync: boolean) =>
     plugins.reduce((acc, plugin) => {
       acc[plugin.name] = (data) => {
         if (!plugin.test(data)) {
           return
         }
         if (plugin.stringifyAsync) {
-          const r = plugin.stringifyAsync(data, {
-            get result() {
-              return result
-            },
-            set result(value) {
-              result = value
-            },
-            stringify: (data) => stringify(data, options),
-            stringifyAsync: (data) => stringifyAsync(data, options),
-            parse: (data) => parse(data, options),
-          })
-          promises.push(r.promise)
-          return r.value
+          if (collectAsync) {
+            promises.push(
+              plugin.stringifyAsync(data, ctx).then((resolved) => {
+                asyncValues.set(data, resolved)
+              }),
+            )
+            return true // dummy value, first pass result is discarded
+          }
+          if (asyncValues.has(data)) {
+            return asyncValues.get(data)
+          }
         }
         if (plugin.stringify) {
           return plugin.stringify(data)
@@ -67,10 +72,19 @@ export async function stringifyAsync(
         throw new Error(`Plugin ${plugin.name} does not support stringify`)
       }
       return acc
-    }, {} as Record<string, (data: any) => any>),
-  )
+    }, {} as Record<string, (data: any) => any>)
+
+  // First pass: trigger all async operations
+  const firstResult = devalue.stringify(data, buildReducers(true))
+
+  if (promises.length === 0) {
+    return firstResult
+  }
+
   await Promise.all(promises)
-  return result
+
+  // Second pass: use resolved values
+  return devalue.stringify(data, buildReducers(false))
 }
 
 export function parse(

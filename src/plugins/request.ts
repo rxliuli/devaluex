@@ -11,45 +11,37 @@ export const RequestPlugin: Plugin<
     url: string
     method: string
     headers: [string, string][]
-    body: ArrayBuffer
+    body: ArrayBuffer | null
   }
 > = {
   name: 'Request',
   test(data) {
     return data instanceof Request
   },
-  stringifyAsync(data, ctx) {
-    const id = '__' + Date.now() + '__' + Math.random() + '__'
+  async stringifyAsync(data, ctx) {
     const clone = data.clone()
     // Don't use clone.body to check — Playwright's Firefox returns undefined
     // for Request.body even when the request has a body. Use method instead.
     const isBodyless = ['GET', 'HEAD'].includes(clone.method)
+    let body: ArrayBuffer | null = null
+    if (!isBodyless) {
+      const contentType = clone.headers.get('Content-Type')
+      if (contentType?.includes('multipart/form-data')) {
+        const formData = await clone.formData()
+        body = new TextEncoder().encode(
+          await ctx.stringifyAsync(formData),
+        ).buffer as ArrayBuffer
+      } else {
+        body = await clone.arrayBuffer()
+      }
+    }
+    const headers: [string, string][] = []
+    clone.headers.forEach((v, k) => headers.push([k, v]))
     return {
-      value: {
-        url: clone.url,
-        method: clone.method,
-        headers: clone.headers,
-        body: isBodyless ? null : id,
-      },
-      promise: isBodyless
-        ? Promise.resolve()
-        : Promise.resolve().then(async () => {
-            const contentType = clone.headers.get('Content-Type')
-            if (contentType?.includes('multipart/form-data')) {
-              const formData = await clone.formData()
-              const b = new TextEncoder().encode(
-                await ctx.stringifyAsync(formData),
-              )
-              const r = ctx.stringify(b.buffer)
-              ctx.result = ctx.result.replace(`"${id}"`, r.slice(1, -1))
-              return
-            }
-            const bf = await clone.arrayBuffer()
-            ctx.result = ctx.result.replace(
-              `"${id}"`,
-              ctx.stringify(bf).slice(1, -1),
-            )
-          }),
+      url: clone.url,
+      method: clone.method,
+      headers,
+      body,
     }
   },
   parse(data, ctx) {
@@ -57,7 +49,7 @@ export const RequestPlugin: Plugin<
     let body = data.body
     const contentType = headers.get('Content-Type')
     if (contentType?.includes('multipart/form-data')) {
-      body = ctx.parse(new TextDecoder().decode(data.body))
+      body = ctx.parse(new TextDecoder().decode(data.body!))
       headers.delete('Content-Type')
     }
     const init: RequestInit = {

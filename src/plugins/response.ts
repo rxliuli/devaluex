@@ -13,23 +13,15 @@ export const ResponsePlugin: Plugin<
   test(data) {
     return data instanceof Response
   },
-  stringifyAsync(data, ctx) {
-    const id = '__' + Date.now() + '__' + Math.random() + '__'
+  async stringifyAsync(data) {
     const clone = data.clone()
+    const headers: [string, string][] = []
+    clone.headers.forEach((v, k) => headers.push([k, v]))
     return {
-      value: {
-        status: clone.status,
-        statusText: clone.statusText,
-        headers: clone.headers,
-        body: id,
-      },
-      promise: Promise.resolve().then(async () => {
-        const bf = await clone.arrayBuffer()
-        ctx.result = ctx.result.replace(
-          `"${id}"`,
-          ctx.stringify(bf).slice(1, -1),
-        )
-      }),
+      status: clone.status,
+      statusText: clone.statusText,
+      headers,
+      body: await clone.arrayBuffer(),
     }
   },
   parse(data) {

@@ -29,7 +29,7 @@ export const IterablePlugin: Plugin<Iterable<any>, any[]> = {
   },
 }
 
-export const AsyncIterablePlugin: Plugin<AsyncIterable<any>, ArrayBuffer> = {
+export const AsyncIterablePlugin: Plugin<AsyncIterable<any>, any[]> = {
   name: 'AsyncIterable',
   test(data) {
     if (data instanceof Array || data instanceof Set || data instanceof Map) {
@@ -41,24 +41,16 @@ export const AsyncIterablePlugin: Plugin<AsyncIterable<any>, ArrayBuffer> = {
       data[Symbol.asyncIterator] instanceof Function
     )
   },
-  stringifyAsync(data, ctx) {
-    const id = '__' + Date.now() + '__' + Math.random() + '__'
-    return {
-      value: id,
-      promise: Promise.resolve().then(async () => {
-        let result = []
-        for await (const it of data) {
-          result.push(it)
-        }
-        const r = ctx.stringify(new TextEncoder().encode(ctx.stringify(result)).buffer)
-        ctx.result = ctx.result.replace(`"${id}"`, r.slice(1, -1))
-      }),
+  async stringifyAsync(data) {
+    const result = []
+    for await (const it of data) {
+      result.push(it)
     }
+    return result
   },
-  parse(data, ctx) {
-    const result = ctx.parse(new TextDecoder().decode(data))
+  parse(data) {
     const iterator = (async function* () {
-      for (const it of result) {
+      for (const it of data) {
         yield it
       }
     })()

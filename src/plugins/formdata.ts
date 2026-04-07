@@ -1,5 +1,5 @@
 import { Plugin } from './plugin'
-import { FileNode, getFileNode } from './blob'
+import { FileNode } from './blob'
 
 export const FormDataPlugin: Plugin<FormData, [string, string | FileNode][]> = {
   name: 'FormData',
@@ -14,24 +14,24 @@ export const FormDataPlugin: Plugin<FormData, [string, string | FileNode][]> = {
       throw new Error(`Unsupported value type: ${typeof v}`)
     })
   },
-  stringifyAsync(data, ctx) {
+  async stringifyAsync(data) {
     const entries = [...data.entries()]
-    const promises: Promise<void>[] = []
-    const value = entries.map(([k, v]) => {
-      if (typeof v === 'string') {
-        return [k, v]
-      }
-      if (v instanceof File) {
-        const { node, promise } = getFileNode(v, ctx)
-        promises.push(promise)
-        return [k, node]
-      }
-      throw new Error(`Unsupported value type: ${typeof v}`)
-    }) as [string, string | FileNode][]
-    return {
-      value,
-      promise: Promise.all(promises) as unknown as Promise<void>,
-    }
+    return Promise.all(
+      entries.map(async ([k, v]) => {
+        if (typeof v === 'string') {
+          return [k, v] as [string, string]
+        }
+        if (v instanceof File) {
+          return [k, {
+            name: v.name,
+            type: v.type,
+            lastModified: v.lastModified,
+            ref: await v.arrayBuffer(),
+          }] as [string, FileNode]
+        }
+        throw new Error(`Unsupported value type: ${typeof v}`)
+      }),
+    )
   },
   parse(data) {
     const fd = new FormData()

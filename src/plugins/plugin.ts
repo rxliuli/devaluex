@@ -5,15 +5,11 @@ export interface Plugin<I, O> {
   stringifyAsync?(
     data: I,
     ctx: {
-      result: string
       stringify: (data: any) => string
       stringifyAsync: (data: any) => Promise<string>
       parse: (data: any) => any
     },
-  ): {
-    value: any
-    promise: Promise<void>
-  }
+  ): Promise<O>
   parse(
     data: O,
     ctx: {
