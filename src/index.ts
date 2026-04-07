@@ -1,5 +1,6 @@
 export type * from './plugins/plugin'
 export * from './plugins/blob'
+export * from './plugins/cryptokey'
 export * from './plugins/customEvent'
 export * from './plugins/dataview'
 export * from './plugins/DOMException'
