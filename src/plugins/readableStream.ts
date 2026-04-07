@@ -5,7 +5,7 @@ import { Plugin } from './plugin'
 // Use `getReader()` to consume streams for cross-browser compatibility.
 // Tracked: https://github.com/WebKit/standards-positions/issues/319
 // Can I Use: https://caniuse.com/mdn-api_readablestream_--asynciterator
-export const ReadableStreamPlugin: Plugin<ReadableStream, Uint8Array> = {
+export const ReadableStreamPlugin: Plugin<ReadableStream, ArrayBuffer> = {
   name: 'ReadableStream',
   test(data) {
     return (
@@ -26,7 +26,7 @@ export const ReadableStreamPlugin: Plugin<ReadableStream, Uint8Array> = {
           }
           chunks.push(value)
         }
-        const r = ctx.stringify(new TextEncoder().encode(ctx.stringify(chunks)))
+        const r = ctx.stringify(new TextEncoder().encode(ctx.stringify(chunks)).buffer)
         ctx.result = ctx.result.replace(`"${id}"`, r.slice(1, -1))
       }),
     }

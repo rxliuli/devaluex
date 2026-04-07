@@ -29,7 +29,7 @@ export const IterablePlugin: Plugin<Iterable<any>, any[]> = {
   },
 }
 
-export const AsyncIterablePlugin: Plugin<AsyncIterable<any>, Uint8Array> = {
+export const AsyncIterablePlugin: Plugin<AsyncIterable<any>, ArrayBuffer> = {
   name: 'AsyncIterable',
   test(data) {
     if (data instanceof Array || data instanceof Set || data instanceof Map) {
@@ -50,7 +50,7 @@ export const AsyncIterablePlugin: Plugin<AsyncIterable<any>, Uint8Array> = {
         for await (const it of data) {
           result.push(it)
         }
-        const r = ctx.stringify(new TextEncoder().encode(ctx.stringify(result)))
+        const r = ctx.stringify(new TextEncoder().encode(ctx.stringify(result)).buffer)
         ctx.result = ctx.result.replace(`"${id}"`, r.slice(1, -1))
       }),
     }

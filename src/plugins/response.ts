@@ -6,7 +6,7 @@ export const ResponsePlugin: Plugin<
     status: number
     statusText: string
     headers: [string, string][]
-    body: Uint8Array
+    body: ArrayBuffer
   }
 > = {
   name: 'Response',

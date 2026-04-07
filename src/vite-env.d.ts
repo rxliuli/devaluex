@@ -2,8 +2,7 @@
 /// <reference types="@vitest/browser/matchers" />
 /// <reference types="@vitest/browser/providers/playwright" />
 
-declare module '@vitest/browser/context' {
-  import type { BrowserCommand } from '@vitest/browser/context'
+declare module 'vitest/browser' {
   interface Locator {
     element(): HTMLElement
   }

@@ -3,7 +3,7 @@ import { createFormData, testPlugin } from '../test/testPlugin'
 import { FormDataPlugin } from './formdata'
 import { ReadableStreamPlugin } from './readableStream'
 import { stringify } from '../devaluex'
-import { server } from '@vitest/browser/context'
+import { server } from 'vitest/browser'
 
 const fd = createFormData([
   [

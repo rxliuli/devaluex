@@ -3,7 +3,7 @@ import { RequestPlugin } from './request'
 import { HeadersPlugin } from './headers'
 import { createFormData, testPlugin } from '../test/testPlugin'
 import { FormDataPlugin } from './formdata'
-import { server } from '@vitest/browser/context'
+import { server } from 'vitest/browser'
 import { ReadableStreamPlugin } from './readableStream'
 
 function strToArrayBuffer(str: string): ArrayBuffer {

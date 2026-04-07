@@ -11,7 +11,7 @@ export const RequestPlugin: Plugin<
     url: string
     method: string
     headers: [string, string][]
-    body: Uint8Array
+    body: ArrayBuffer
   }
 > = {
   name: 'Request',
@@ -40,7 +40,7 @@ export const RequestPlugin: Plugin<
               const b = new TextEncoder().encode(
                 await ctx.stringifyAsync(formData),
               )
-              const r = ctx.stringify(b)
+              const r = ctx.stringify(b.buffer)
               ctx.result = ctx.result.replace(`"${id}"`, r.slice(1, -1))
               return
             }
