@@ -27,7 +27,7 @@
   "sideEffects": false,
   "devDependencies": {
     "@vitest/browser-playwright": "^4.1.3",
-    "playwright": "^1.59.1",
+    "playwright": "^1.60.0",
     "typescript": "^6.0.2",
     "unbuild": "^3.6.1",
     "vitest": "^4.1.3"
